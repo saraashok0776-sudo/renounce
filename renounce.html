@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>renounce</title>
+
+<style>
+
+body {
+font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background-color:#f0f2f5;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
+padding:20px;
+}
+
+.container {
+background-color:white;
+padding:2rem;
+border-radius:10px;
+box-shadow:0 4px 15px rgba(0,0,0,0.1);
+width:100%;
+max-width:500px;
+}
+
+h2 {
+color:#333;
+margin-bottom:1rem;
+text-align:center;
+}
+
+.input-group {
+margin-bottom:1rem;
+}
+
+label {
+display:block;
+margin-bottom:5px;
+font-weight:bold;
+color:#555;
+}
+
+textarea {
+width:100%;
+padding:12px;
+border:1px solid #ccc;
+border-radius:5px;
+font-size:16px;
+box-sizing:border-box;
+resize:vertical;
+}
+
+button {
+width:100%;
+padding:12px;
+border:none;
+border-radius:5px;
+font-size:16px;
+cursor:pointer;
+margin-top:8px;
+}
+
+.search-btn {
+background-color:#128C7E;
+color:white;
+}
+
+.search-btn:hover {
+background-color:#075E54;
+}
+
+.copy-btn {
+background:#075E54;
+color:white;
+}
+
+.copy-btn:hover {
+background:#0056b3;
+}
+
+#results {
+margin-top:20px;
+}
+
+.result-item {
+background-color:#f9f9f9;
+border:1px solid #ddd;
+padding:10px 15px;
+margin-bottom:10px;
+border-radius:5px;
+}
+
+.result-text {
+font-size:14px;
+color:#333;
+line-height:1.4;
+}
+
+.not-found {
+color:#721c24;
+background-color:#f8d7da;
+padding:10px;
+border-radius:5px;
+margin-bottom:10px;
+}
+
+.success-msg {
+color:#155724;
+background-color:#d4edda;
+padding:10px;
+border-radius:5px;
+margin-bottom:10px;
+text-align:center;
+}
+
+.footer {
+margin-top:20px;
+text-align:center;
+font-size:12px;
+color:#666;
+border-top:1px solid #ddd;
+padding-top:10px;
+}
+
+.footer strong {
+color:#128C7E;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Student Absentees Entry</h2>
+
+<div class="input-group">
+<label>Enter Register Numbers (comma or space separated)</label>
+<textarea id="regNumbers" rows="3" placeholder="Enter the register number"></textarea>
+</div>
+
+<button class="search-btn" onclick="findStudents()">Find Students</button>
+<button class="copy-btn" onclick="copyAllMessages()">Copy All Messages</button>
+
+<div id="results"></div>
+
+<div class="footer">
+Created by <strong>SARANI B</strong> - DEPARTMENT OF CSBS
+</div>
+
+</div>
+
+<script>
+
+/* --- Database --- */
+
+const studentsData = [
+{ regNo: "01", name: "01-Abishek G", room: "Room 101", gender: "Boys", hostel: "Dheeran" },
+{ regNo: "02", name: "02-Aparna R", room: "-", gender: "Girls", hostel: "DAY SCHOLAR" },
+{ regNo: "03", name: "03-Avinash R", room: "Room 310", gender: "Boys", hostel: "C3" },
+{ regNo: "04", name: "04-Backiyalakshmi R", room: "Room 107", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani " },
+{ regNo: "05", name: "05-Deepakbalaji R", room: "Room 424", gender: "Boys", hostel: "C3" },
+{ regNo: "06", name: "06-Dhana Prabhakaran S", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "07", name: "07-Dhanush D", room: "Room 317", gender: "Boys", hostel: "C1" },
+{ regNo: "08", name: "08-Ejo Emmanuvel Jose", room: "Room 125", gender: "Boys", hostel: "C3" },
+{ regNo: "09", name: "09-Geerthana Ramesh", room: "Room 616", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "10", name: "10-Gowtham S", room: "Room 307", gender: "Boys", hostel: "C3" },
+{ regNo: "11", name: "11-Hariharan S", room: "Room 108", gender: "Boys", hostel: "C1" },
+{ regNo: "12", name: "12-Harishma R", room: "Room 311", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "13", name: "13-Harivishal D", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "14", name: "14-Hemnath S", room: "Room 105", gender: "Boys", hostel: "C1" },
+{ regNo: "15", name: "15-Ilakkiya S", room: "Room 419", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "16", name: "16-Jaisri S", room: "Room 309", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "17", name: "17-Kajendhiran K", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "18", name: "18-Kathir S P", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "19", name: "19-Kishore M", room: "Room 207", gender: "Boys", hostel: "C3" },
+{ regNo: "20", name: "20-Madhan Akash R S", room: "Room 219", gender: "Boys", hostel: "C1" },
+{ regNo: "21", name: "21-Madhan M", room: "Room 326", gender: "Boys", hostel: "C1" },
+{ regNo: "22", name: "22-Mahaaneesh K", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "23", name: "23-Mahendiran M", room: "Room 308", gender: "Boys", hostel: "C1" },
+{ regNo: "24", name: "24-Meenaka P", room: "-", gender: "Girls", hostel: "DAY SCHOLAR" },
+{ regNo: "25", name: "25-Mohamed Rasif S", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "26", name: "26-Mohamed shakil A", room: "Room 304", gender: "Boys", hostel: "C3" },
+{ regNo: "27", name: "27-Mohammed Fazil F", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "28", name: "28-Mohan A", room: "Room 322", gender: "Boys", hostel: "C1" },
+{ regNo: "29", name: "29-Muhammed Shamil ", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "30", name: "30-Nageshwari K", room: "Room 326", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "31", name: "31-Naresh S", room: "Room 122", gender: "Boys", hostel: "C1" },
+{ regNo: "32", name: "32-Nikelabairavi R", room: "Room 209", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "33", name: "33-Nirupama D", room: "-", gender: "Girls", hostel: "DAY SCHOLAR" },
+{ regNo: "34", name: "34-Nithish A", room: "Room 105", gender: "Boys", hostel: "C1" },
+{ regNo: "35", name: "35-Noorul Elahe M", room: "Room 326", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "36", name: "36-Ovinea Rose S", room: "-", gender: "Girls", hostel: "DAY SCHOLAR" },
+{ regNo: "37", name: "37-Prasanna Samuel Raj J", room: "Room 212", gender: "Boys", hostel: "C3" },
+{ regNo: "38", name: "38-Prassana S", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "39", name: "39-Prem V", room: "Room 404", gender: "Boys", hostel: "C3" },
+{ regNo: "40", name: "40-Ragulkannan R", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "41", name: "41-Riyash R", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "42", name: "42-Rohith S", room: "Room 103", gender: "Boys", hostel: "C1" },
+{ regNo: "43", name: "43-Rohith T N", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "44", name: "44-Saisanthosh M", room: "Room 103", gender: "Boys", hostel: "C1" },
+{ regNo: "45", name: "45-Sandhya P", room: "Room 310", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "46", name: "46-Sarani B", room: "Room 420", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "47", name: "47-Sarini S", room: "Room 310", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "48", name: "48-Sathiyendran P", room: "Room 420", gender: "Boys", hostel: "C3" },
+{ regNo: "49", name: "49-Sindhuja V", room: "-", gender: "Girls", hostel: "DAY SCHOLAR" },
+{ regNo: "50", name: "50-Sriharirajan V", room: "Room 404", gender: "Boys", hostel: "C3" },
+{ regNo: "51", name: "51-Srivarshan M", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "52", name: "52-Sujithkumar G", room: "Room 124", gender: "Boys", hostel: "C1" },
+{ regNo: "53", name: "53-Tamiliniyan S", room: "Room 419", gender: "Boys", hostel: "C3" },
+{ regNo: "54", name: "54-Thananyayan K", room: "Room 222", gender: "Boys", hostel: "C3" },
+{ regNo: "55", name: "55-Tharani A", room: "Room 309", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "56", name: "56-Tharika S", room: "Room 422", gender: "Girls", hostel: "Girls Hostel- Jhansi Rani" },
+{ regNo: "57", name: "57-Vanjith Kumar R", room: "Room 409", gender: "Boys", hostel: "C3" },
+{ regNo: "58", name: "58-Varun S K", room: "Room 115", gender: "Boys", hostel: "C1" },
+{ regNo: "59", name: "59-Vimal R", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "60", name: "60-Vishnu A", room: "Room 212", gender: "Boys", hostel: "C3" },
+{ regNo: "61", name: "61-Vishnudeepak S", room: "-", gender: "Boys", hostel: "DAY SCHOLAR" },
+{ regNo: "62", name: "62-Yogeshwaran M", room: "Room 109", gender: "Boys", hostel: "C3" },
+{ regNo: "63", name: "63-Yokeshwaran R", room: "Room 108", gender: "Boys", hostel: "C1" }
+];
+
+let allMessages = [];
+
+function findStudents(){
+
+const inputVal=document.getElementById('regNumbers').value.trim();
+const resultsDiv=document.getElementById('results');
+
+resultsDiv.innerHTML="";
+allMessages=[];
+
+if(inputVal===""){
+resultsDiv.innerHTML='<div class="not-found">Please enter register numbers.</div>';
+return;
+}
+
+const regList=inputVal.split(/[,\s]+/).filter(r=>r!=="");
+
+let foundCount=0;
+let notFoundList=[];
+
+regList.forEach(regNo=>{
+
+const student=studentsData.find(s=>s.regNo===regNo);
+
+if(student){
+
+const msg=`Hello ${student.name}
+Your Hostel: ${student.gender} Hostel (${student.hostel})
+Room Number: ${student.room}
+Report to the reception immediately.`;
+
+allMessages.push(msg);
+
+const div=document.createElement('div');
+div.className='result-item';
+
+div.innerHTML=`
+<span class="result-text">
+<strong>${student.name}</strong><br>
+${student.hostel} (${student.gender})<br>
+${student.room}
+</span>
+`;
+
+resultsDiv.appendChild(div);
+
+foundCount++;
+
+}else{
+notFoundList.push(regNo);
+}
+
+});
+
+if(foundCount>0){
+const successDiv=document.createElement('div');
+successDiv.className='success-msg';
+successDiv.innerText=`✅ ${foundCount} student(s) found!`;
+resultsDiv.prepend(successDiv);
+}
+
+if(notFoundList.length>0){
+const errorDiv=document.createElement('div');
+errorDiv.className='not-found';
+errorDiv.innerText=`❌ Not found: ${notFoundList.join(', ')}`;
+resultsDiv.appendChild(errorDiv);
+}
+
+}
+
+function copyAllMessages(){
+
+if(allMessages.length===0){
+alert("No messages to copy!");
+return;
+}
+
+const text=allMessages.join("\n\n");
+
+const textarea=document.createElement("textarea");
+textarea.value=text;
+document.body.appendChild(textarea);
+
+textarea.select();
+document.execCommand("copy");
+
+document.body.removeChild(textarea);
+
+alert("All messages copied! Paste in WhatsApp.");
+
+}
+
+</script>
+
+</body>
+</html>
